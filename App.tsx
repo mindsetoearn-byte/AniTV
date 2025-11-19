@@ -67,12 +67,19 @@ const App: React.FC = () => {
     }
   };
 
-  // Navigate to login page when trying to access admin without auth
+  // This effect handles page navigation logic that depends on the current state.
+  // It prevents calling state setters during the render phase, which causes crashes.
   useEffect(() => {
+    // If trying to access admin page while not authenticated, redirect to login
     if (currentPage === 'admin' && !isAuthenticated) {
       navigateTo('login');
     }
-  }, [currentPage, isAuthenticated]);
+    
+    // If on the details page but no anime is selected, redirect to home
+    if (currentPage === 'details' && !selectedAnime) {
+      navigateTo('home');
+    }
+  }, [currentPage, isAuthenticated, selectedAnime]);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -86,26 +93,20 @@ const App: React.FC = () => {
                   onLogout={handleLogout}
                />;
       case 'details':
-        if (selectedAnime) {
-          return <DetailsPage anime={selectedAnime} onBack={() => navigateTo('home')} />;
-        }
-        // Fallback to home if no anime is selected
-        navigateTo('home');
-        return null;
+        // The useEffect handles the redirect if selectedAnime is null.
+        // So we only need to render the page if the data is present.
+        return selectedAnime ? <DetailsPage anime={selectedAnime} onBack={() => navigateTo('home')} /> : null;
       case 'login':
         return <LoginPage onSuccess={handleLoginSuccess} onBack={() => navigateTo('home')}/>;
       case 'admin':
-        if(isAuthenticated) {
-            return <AdminPage 
-                animeData={animeData}
-                onAddAnime={handleAddAnime}
-                onUpdateAnime={handleUpdateAnime}
-                onDeleteAnime={handleDeleteAnime}
-                onLogout={handleLogout} 
-            />;
-        }
-        navigateTo('login');
-        return null;
+        // The useEffect handles the redirect if not authenticated.
+        return isAuthenticated ? <AdminPage 
+            animeData={animeData}
+            onAddAnime={handleAddAnime}
+            onUpdateAnime={handleUpdateAnime}
+            onDeleteAnime={handleDeleteAnime}
+            onLogout={handleLogout} 
+        /> : null;
       default:
         return <HomePage 
                   animeData={animeData} 
