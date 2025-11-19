@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Anime } from '../types';
 import { AnimeCard } from './AnimeCard';
@@ -8,7 +9,7 @@ import type { Page } from '../App';
 
 interface HomePageProps {
     animeData: Anime[];
-    featuredAnime: Anime;
+    featuredAnime: Anime | null;
     onSelectAnime: (anime: Anime) => void;
     onNavigate: (page: Page) => void;
     isAuthenticated: boolean;
@@ -49,18 +50,22 @@ const Hero: React.FC<{ anime: Anime, onSelectAnime: (anime: Anime) => void; }> =
 
 
 export const HomePage: React.FC<HomePageProps> = ({ animeData, featuredAnime, onSelectAnime, onNavigate, isAuthenticated, onLogout }) => {
+    const nonFeaturedAnime = animeData.filter(anime => !featuredAnime || anime.id !== featuredAnime.id);
+    
     return (
         <div className="bg-gray-900 min-h-screen">
             <Header onNavigate={onNavigate} isAuthenticated={isAuthenticated} onLogout={onLogout} />
             <main className="pt-20">
-                <Hero anime={featuredAnime} onSelectAnime={onSelectAnime} />
+                {featuredAnime && <Hero anime={featuredAnime} onSelectAnime={onSelectAnime} />}
+                
                 <ContentRow title="Recently Updated">
-                    {animeData.slice(0, 5).map(anime => (
+                    {nonFeaturedAnime.slice(0, 6).map(anime => (
                         <AnimeCard key={anime.id} anime={anime} onSelect={onSelectAnime} />
                     ))}
                 </ContentRow>
+                
                 <ContentRow title="New on AniTV">
-                    {animeData.slice(1).map(anime => (
+                    {[...nonFeaturedAnime].reverse().slice(0, 6).map(anime => (
                         <AnimeCard key={anime.id} anime={anime} onSelect={onSelectAnime} />
                     ))}
                 </ContentRow>

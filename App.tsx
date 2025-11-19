@@ -4,7 +4,7 @@ import { HomePage } from './components/HomePage';
 import { DetailsPage } from './components/DetailsPage';
 import { LoginPage } from './components/LoginPage';
 import { AdminPage } from './components/AdminPage';
-import { mockAnimeData, mockFeaturedAnime } from './data/mockData';
+import { mockAnimeData } from './data/mockData';
 import type { Anime } from './types';
 
 export type Page = 'home' | 'details' | 'login' | 'admin';
@@ -14,7 +14,9 @@ const App: React.FC = () => {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [animeData, setAnimeData] = useState<Anime[]>(mockAnimeData);
-  const [featuredAnime, setFeaturedAnime] = useState<Anime>(mockFeaturedAnime);
+  const [featuredAnime, setFeaturedAnime] = useState<Anime | null>(
+    mockAnimeData.length > 0 ? mockAnimeData[0] : null
+  );
 
 
   const navigateTo = (page: Page) => {
@@ -44,13 +46,23 @@ const App: React.FC = () => {
   };
   
   const handleUpdateAnime = (updatedAnime: Anime) => {
-    setAnimeData(prevData => prevData.map(anime => anime.id === updatedAnime.id ? updatedAnime : anime));
+    const newData = animeData.map(anime => anime.id === updatedAnime.id ? updatedAnime : anime);
+    setAnimeData(newData);
+    
+    if (featuredAnime && featuredAnime.id === updatedAnime.id) {
+        setFeaturedAnime(updatedAnime);
+    }
     alert('Anime updated successfully!');
   };
 
   const handleDeleteAnime = (animeId: number) => {
     if(window.confirm('Are you sure you want to delete this anime?')) {
-        setAnimeData(prevData => prevData.filter(anime => anime.id !== animeId));
+        const newData = animeData.filter(anime => anime.id !== animeId);
+        setAnimeData(newData);
+        
+        if (featuredAnime && featuredAnime.id === animeId) {
+            setFeaturedAnime(newData.length > 0 ? newData[0] : null);
+        }
         alert('Anime deleted successfully!');
     }
   };

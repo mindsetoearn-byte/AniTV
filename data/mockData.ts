@@ -1,26 +1,26 @@
+
 import type { Anime } from '../types';
 
 const placeholderWatchUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
-export const mockFeaturedAnime: Anime = {
-  id: 1,
-  title: 'Arifureta: From Commonplace to World\'s Strongest Season 3',
-  synopsis: 'Hajime Nagumo and his high school class are suddenly summoned to a fantastical land as heroes. But while most of his classmates have powerful stats and abilities, Hajime is a "Synergist," with only a single transmutation skill.',
-  posterUrl: 'https://picsum.photos/seed/arifureta/500/750',
-  bannerUrl: 'https://picsum.photos/seed/arifuretabanner/1280/720',
-  episodes: Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    episodeNumber: i + 1,
-    title: `Episode ${i + 1}: The Monster of the Abyss`,
-    duration: 24,
-    watchUrl: placeholderWatchUrl,
-  })),
-  type: 'TV',
-  totalEpisodes: 12,
-  currentEpisodes: 7
-};
-
 export const mockAnimeData: Anime[] = [
+  {
+    id: 1,
+    title: 'Arifureta: From Commonplace to World\'s Strongest Season 3',
+    synopsis: 'Hajime Nagumo and his high school class are suddenly summoned to a fantastical land as heroes. But while most of his classmates have powerful stats and abilities, Hajime is a "Synergist," with only a single transmutation skill.',
+    posterUrl: 'https://picsum.photos/seed/arifureta/500/750',
+    bannerUrl: 'https://picsum.photos/seed/arifuretabanner/1280/720',
+    episodes: Array.from({ length: 12 }, (_, i) => ({
+      id: i + 1,
+      episodeNumber: i + 1,
+      title: `Episode ${i + 1}: The Monster of the Abyss`,
+      duration: 24,
+      watchUrl: placeholderWatchUrl,
+    })),
+    type: 'TV',
+    totalEpisodes: 12,
+    currentEpisodes: 7
+  },
   {
     id: 2,
     title: 'The Laid Off Demon King',
