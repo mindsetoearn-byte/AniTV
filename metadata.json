@@ -1,0 +1,5 @@
+{
+  "name": "AniTV",
+  "description": "A high-fidelity mockup for a modern anime streaming platform. It features a clean, dark-mode interface, a home page with categorized content, a detailed anime view with an episode list, and a functional admin panel for content management.",
+  "requestFramePermissions": []
+}
