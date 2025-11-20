@@ -65,7 +65,7 @@ export const HomePage: React.FC<HomePageProps> = ({ animeData, featuredAnime, on
                 </ContentRow>
                 
                 <ContentRow title="New on AniTV">
-                    {[...nonFeaturedAnime].reverse().slice(0, 6).map(anime => (
+                    {nonFeaturedAnime.slice(6, 12).map(anime => (
                         <AnimeCard key={anime.id} anime={anime} onSelect={onSelectAnime} />
                     ))}
                 </ContentRow>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { Anime, Episode } from '../types';
 import { LogoutIcon } from './icons';
@@ -27,17 +28,25 @@ export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onU
     const [isCreatingNew, setIsCreatingNew] = useState(false);
 
     useEffect(() => {
-        // If an anime is updated in the main list, refresh the form data
+        // This effect safely syncs the form state with the master anime list.
+        // It prevents infinite loops by comparing the data before updating state.
         if (selectedAnime) {
-            const updatedAnime = animeData.find(a => a.id === selectedAnime.id);
-            if (updatedAnime) {
-                setSelectedAnime(JSON.parse(JSON.stringify(updatedAnime)));
+            const updatedAnimeInList = animeData.find(a => a.id === selectedAnime.id);
+
+            // If the anime is still in the main list, check if an update is needed.
+            if (updatedAnimeInList) {
+                // Deep compare the objects to see if the form data is out of sync.
+                // This is crucial to prevent an infinite re-render loop.
+                if (JSON.stringify(updatedAnimeInList) !== JSON.stringify(selectedAnime)) {
+                    setSelectedAnime(JSON.parse(JSON.stringify(updatedAnimeInList)));
+                }
             } else {
-                // If the selected anime was deleted, close the form
+                // If the anime was deleted from the main list, close the form.
                 setSelectedAnime(null);
             }
         }
-    }, [animeData]);
+    }, [animeData, selectedAnime]);
+
 
     const handleSelectAnime = (anime: Anime) => {
         setIsCreatingNew(false);
