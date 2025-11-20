@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 // FIX: Added onClick prop to Logo component to allow it to be clickable.
@@ -65,5 +66,18 @@ export const LogoutIcon: React.FC<{ className?: string }> = ({ className }) => (
 export const AdminIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.554-.221m-1.664 1.447a11.954 11.954 0 0 1-2.928 3.013M14.25 21a2.236 2.236 0 0 1-2.23-1.53l-.555-2.217m-1.664-1.447a11.953 11.953 0 0 1-2.928-3.013m0 0a3.003 3.003 0 0 0-3.655 0M12 21a2.236 2.236 0 0 0 2.23-1.53l.555-2.217m1.664-1.447a11.953 11.953 0 0 0 2.928-3.013m0 0a3.003 3.003 0 0 1 3.655 0m-14.3 0a3.003 3.003 0 0 1 3.655 0m1.664 1.447a11.953 11.953 0 0 1 2.928 3.013M3.75 12a3.003 3.003 0 0 0 3.655 0m1.664-1.447a11.953 11.953 0 0 0 2.928-3.013m0 0a3.003 3.003 0 0 1-3.655 0m14.3 0a3.003 3.003 0 0 0-3.655 0M12 3.75a3.003 3.003 0 0 0-3.655 0m1.664 1.447a11.953 11.953 0 0 0-2.928 3.013" />
+    </svg>
+);
+
+export const CheckCircleIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>
+);
+
+export const SpinnerIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
 );

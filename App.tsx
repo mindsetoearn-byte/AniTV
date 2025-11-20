@@ -41,8 +41,6 @@ const App: React.FC = () => {
 
   const handleAddAnime = (newAnime: Anime) => {
     setAnimeData(prevData => [newAnime, ...prevData]);
-    alert('Anime added successfully!');
-    navigateTo('admin');
   };
   
   const handleUpdateAnime = (updatedAnime: Anime) => {
@@ -52,18 +50,14 @@ const App: React.FC = () => {
     if (featuredAnime && featuredAnime.id === updatedAnime.id) {
         setFeaturedAnime(updatedAnime);
     }
-    alert('Anime updated successfully!');
   };
 
   const handleDeleteAnime = (animeId: number) => {
-    if(window.confirm('Are you sure you want to delete this anime?')) {
-        const newData = animeData.filter(anime => anime.id !== animeId);
-        setAnimeData(newData);
-        
-        if (featuredAnime && featuredAnime.id === animeId) {
-            setFeaturedAnime(newData.length > 0 ? newData[0] : null);
-        }
-        alert('Anime deleted successfully!');
+    const newData = animeData.filter(anime => anime.id !== animeId);
+    setAnimeData(newData);
+    
+    if (featuredAnime && featuredAnime.id === animeId) {
+        setFeaturedAnime(newData.length > 0 ? newData[0] : null);
     }
   };
 
