@@ -1,25 +1,24 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Anime } from '../types';
 import { AnimeCard } from './AnimeCard';
 import { ChevronRightIcon, PlayIcon } from './icons';
-import { Header } from './Header';
+import { Header, FilterType } from './Header';
 import type { Page } from '../App';
-
+import { DisplayAd } from './DisplayAd';
 
 interface HomePageProps {
     animeData: Anime[];
-    featuredAnime: Anime | null;
     onSelectAnime: (anime: Anime) => void;
     onNavigate: (page: Page) => void;
     isAuthenticated: boolean;
     onLogout: () => void;
+    onOpenSearch: () => void;
 }
 
 const ContentRow: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <section className="mb-12">
         <div className="flex items-center justify-between mb-4 px-4 md:px-8">
-            <h2 className="text-2xl font-bold text-white">{title}</h2>
+            <h2 className="text-2xl font-bold text-white animate-slideInRight" style={{ animationDelay: '200ms' }}>{title}</h2>
             <button className="flex items-center text-sm text-purple-400 hover:text-purple-300">
                 <ChevronRightIcon className="w-5 h-5" />
             </button>
@@ -30,43 +29,118 @@ const ContentRow: React.FC<{ title: string; children: React.ReactNode }> = ({ ti
     </section>
 );
 
-const Hero: React.FC<{ anime: Anime, onSelectAnime: (anime: Anime) => void; }> = ({ anime, onSelectAnime }) => (
+const Hero: React.FC<{ 
+    anime: Anime, 
+    onSelectAnime: (anime: Anime) => void; 
+    featuredCount: number;
+    activeIndex: number;
+    onDotClick: (index: number) => void;
+}> = ({ anime, onSelectAnime, featuredCount, activeIndex, onDotClick }) => (
     <div className="relative h-[60vh] md:h-[70vh] w-full mb-8">
-        <img src={anime.bannerUrl} alt={anime.title} className="absolute inset-0 w-full h-full object-cover" />
+        <img src={anime.bannerUrl} alt={anime.title} className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500" />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
-        <div className="relative z-10 flex flex-col justify-end h-full p-4 md:p-8">
-            <p className="text-lg font-bold text-purple-400">0{anime.currentEpisodes}</p>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight max-w-2xl my-2">{anime.title}</h1>
+        <div key={anime.id} className="relative z-10 flex flex-col justify-end h-full p-4 md:p-8 animate-fadeIn">
+            <p className="text-lg font-bold text-purple-400 animate-slideInUp" style={{ animationDelay: '100ms' }}>0{anime.currentEpisodes}</p>
+            <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight max-w-2xl my-2 animate-slideInUp" style={{ animationDelay: '200ms' }}>{anime.title}</h1>
             <button 
                 onClick={() => onSelectAnime(anime)}
-                className="mt-4 flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full w-48 transition-transform duration-200 hover:scale-105"
+                className="mt-4 flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full w-48 transition-transform duration-200 hover:scale-105 animate-slideInUp"
+                style={{ animationDelay: '300ms' }}
             >
                 <PlayIcon className="w-6 h-6" />
                 <span>Watch Now</span>
             </button>
         </div>
+         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20">
+            {Array.from({ length: featuredCount }).map((_, index) => (
+                <button
+                    key={index}
+                    onClick={() => onDotClick(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                    className={`h-2 rounded-full transition-all duration-300 ${activeIndex === index ? 'w-8 bg-purple-500' : 'w-2 bg-gray-500 hover:bg-gray-300'}`}
+                />
+            ))}
+        </div>
     </div>
 );
 
+export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, onNavigate, isAuthenticated, onLogout, onOpenSearch }) => {
+    const [filter, setFilter] = useState<FilterType>('all');
+    const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+    const featuredItems = animeData.slice(0, 4);
 
-export const HomePage: React.FC<HomePageProps> = ({ animeData, featuredAnime, onSelectAnime, onNavigate, isAuthenticated, onLogout }) => {
-    const nonFeaturedAnime = animeData.filter(anime => !featuredAnime || anime.id !== featuredAnime.id);
+    useEffect(() => {
+        if (featuredItems.length <= 1) return;
+
+        const timer = setInterval(() => {
+            setActiveHeroIndex(prevIndex => (prevIndex + 1) % featuredItems.length);
+        }, 5000); // Change slide every 5 seconds
+
+        return () => clearInterval(timer);
+    }, [featuredItems.length]);
+
+    const handleFilterChange = (newFilter: FilterType) => {
+        setFilter(newFilter);
+    };
     
+    const handleNavigate = (page: Page) => {
+      if (page === 'home') {
+        setFilter('all');
+      }
+      onNavigate(page);
+    };
+
+    const displayedData = animeData.filter(anime => {
+        if (filter === 'series') return anime.type === 'TV' || anime.type === 'ONA';
+        if (filter === 'movies') return anime.type === 'Movie';
+        return true; // 'all'
+    });
+
     return (
         <div className="bg-gray-900 min-h-screen">
-            <Header onNavigate={onNavigate} isAuthenticated={isAuthenticated} onLogout={onLogout} />
+            <Header 
+                onNavigate={handleNavigate} 
+                isAuthenticated={isAuthenticated} 
+                onLogout={onLogout} 
+                onOpenSearch={onOpenSearch}
+                activeFilter={filter}
+                onFilterChange={handleFilterChange}
+            />
             <main className="pt-20">
-                {featuredAnime && <Hero anime={featuredAnime} onSelectAnime={onSelectAnime} />}
+                <div className="px-4 md:px-8 mb-8">
+                     {/* 
+                      This is a Google AdSense Display Ad unit.
+                      To make this work:
+                      1. Create a "Display ad" unit in your AdSense account.
+                      2. Get the "ad-slot" ID for that unit.
+                      3. Replace "1234567890" below with your actual ad-slot ID.
+                    */}
+                    <DisplayAd adSlot="1234567890" />
+                </div>
+               
+                {featuredItems.length > 0 && (
+                    <Hero 
+                        anime={featuredItems[activeHeroIndex]} 
+                        onSelectAnime={onSelectAnime}
+                        featuredCount={featuredItems.length}
+                        activeIndex={activeHeroIndex}
+                        onDotClick={(index) => setActiveHeroIndex(index)}
+                    />
+                )}
                 
                 <ContentRow title="Recently Updated">
-                    {nonFeaturedAnime.slice(0, 6).map(anime => (
-                        <AnimeCard key={anime.id} anime={anime} onSelect={onSelectAnime} />
+                    {displayedData.slice(0, 6).map((anime, index) => (
+                        <div key={anime.id} className="animate-slideInUp" style={{ animationDelay: `${index * 100 + 300}ms` }}>
+                            <AnimeCard anime={anime} onSelect={onSelectAnime} />
+                        </div>
                     ))}
                 </ContentRow>
                 
                 <ContentRow title="New on AniTV">
-                    {nonFeaturedAnime.slice(6, 12).map(anime => (
-                        <AnimeCard key={anime.id} anime={anime} onSelect={onSelectAnime} />
+                     {displayedData.slice(6, 12).map((anime, index) => (
+                        <div key={anime.id} className="animate-slideInUp" style={{ animationDelay: `${index * 100 + 300}ms` }}>
+                            <AnimeCard anime={anime} onSelect={onSelectAnime} />
+                        </div>
                     ))}
                 </ContentRow>
             </main>

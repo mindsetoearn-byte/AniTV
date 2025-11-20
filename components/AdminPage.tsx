@@ -14,6 +14,7 @@ interface AdminPageProps {
 interface Toast {
   id: number;
   message: string;
+  visible: boolean;
 }
 
 const createNewAnime = (): Anime => ({
@@ -41,14 +42,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onU
                 setSelectedAnime(null);
             }
         }
-    }, [animeData]);
+    }, [animeData, selectedAnime, isCreatingNew]);
 
 
     const showToast = (message: string) => {
         const id = Date.now();
-        setToasts(prev => [...prev, { id, message }]);
+        setToasts(prev => [...prev, { id, message, visible: true }]);
         setTimeout(() => {
-            setToasts(prev => prev.filter(toast => toast.id !== id));
+            setToasts(prev => prev.map(t => t.id === id ? { ...t, visible: false } : t));
+            setTimeout(() => {
+                setToasts(prev => prev.filter(toast => toast.id !== id));
+            }, 500);
         }, 3000);
     };
 
@@ -139,7 +143,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onU
     }
 
     const renderForm = () => (
-        <form onSubmit={handleSave} className="space-y-6">
+        <form onSubmit={handleSave} className="space-y-6 animate-fadeIn">
             <input name="title" value={selectedAnime!.title} onChange={handleFormChange} placeholder="Title" className="w-full bg-gray-700 p-3 rounded-md focus:ring-2 focus:ring-purple-500 outline-none transition" required />
             <textarea name="synopsis" value={selectedAnime!.synopsis} onChange={handleFormChange} placeholder="Synopsis" className="w-full bg-gray-700 p-3 rounded-md h-28 focus:ring-2 focus:ring-purple-500 outline-none transition" required />
             <input name="posterUrl" value={selectedAnime!.posterUrl} onChange={handleFormChange} placeholder="Poster URL" className="w-full bg-gray-700 p-3 rounded-md focus:ring-2 focus:ring-purple-500 outline-none transition" required />
@@ -156,7 +160,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onU
                 <h3 className="text-xl font-semibold border-b border-gray-600 pb-2">Episodes</h3>
                 <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
                     {selectedAnime!.episodes.map((ep, index) => (
-                        <div key={ep.id} className="bg-gray-700/50 p-4 rounded-lg space-y-3">
+                        <div key={ep.id} className="bg-gray-700/50 p-4 rounded-lg space-y-3 animate-fadeIn">
                             <div className="flex justify-between items-center">
                                 <p className="font-bold">Episode {ep.episodeNumber}</p>
                                 <button onClick={() => removeEpisode(index)} type="button" className="text-red-400 hover:text-red-300 text-sm font-semibold">Remove</button>
@@ -196,8 +200,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onU
                             + Add New Anime
                         </button>
                         <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
-                           {animeData.map(anime => (
-                               <div key={anime.id} className="flex items-center justify-between bg-gray-800 p-3 rounded-md hover:bg-gray-700/70 cursor-pointer" onClick={() => handleSelectAnime(anime)}>
+                           {animeData.map((anime, index) => (
+                               <div 
+                                 key={anime.id} 
+                                 className="flex items-center justify-between bg-gray-800 p-3 rounded-md hover:bg-gray-700/70 cursor-pointer animate-slideInRight"
+                                 style={{ animationDelay: `${index * 50}ms` }}
+                                 onClick={() => handleSelectAnime(anime)}>
                                    <p className="font-semibold truncate">{anime.title}</p>
                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(anime.id); }} className="text-gray-400 hover:text-red-400 ml-2 text-xs">Delete</button>
                                </div>
@@ -210,10 +218,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onU
                 </div>
             </div>
             {/* Toast Notifications */}
-            <div className="fixed bottom-4 right-4 space-y-2">
+             <div className="fixed bottom-4 right-4 space-y-2 z-[200]">
                 {toasts.map(toast => (
-                    <div key={toast.id} className="bg-gray-800 border border-green-500 text-white p-4 rounded-lg shadow-lg flex items-center space-x-3 animate-pulse">
-                         <CheckCircleIcon className="w-6 h-6 text-green-400" />
+                    <div 
+                        key={toast.id} 
+                        className={`bg-green-500 text-white p-4 rounded-lg shadow-lg flex items-center space-x-3 transition-all duration-500 ease-in-out ${toast.visible ? 'transform translate-x-0 opacity-100' : 'transform translate-x-full opacity-0'}`}
+                    >
+                         <CheckCircleIcon className="w-6 h-6" />
                         <span>{toast.message}</span>
                     </div>
                 ))}

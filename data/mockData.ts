@@ -85,9 +85,9 @@ export const mockAnimeData: Anime[] = [
       duration: 25,
       watchUrl: placeholderWatchUrl,
     })),
-    type: 'ONA',
-    totalEpisodes: 10,
-    currentEpisodes: 10
+    type: 'Movie',
+    totalEpisodes: 1,
+    currentEpisodes: 1
   },
   {
     id: 6,

@@ -4,6 +4,7 @@ import { HomePage } from './components/HomePage';
 import { DetailsPage } from './components/DetailsPage';
 import { LoginPage } from './components/LoginPage';
 import { AdminPage } from './components/AdminPage';
+import { SearchOverlay } from './components/SearchOverlay';
 import { mockAnimeData } from './data/mockData';
 import type { Anime } from './types';
 
@@ -14,9 +15,7 @@ const App: React.FC = () => {
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [animeData, setAnimeData] = useState<Anime[]>(mockAnimeData);
-  const [featuredAnime, setFeaturedAnime] = useState<Anime | null>(
-    mockAnimeData.length > 0 ? mockAnimeData[0] : null
-  );
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
 
   const navigateTo = (page: Page) => {
@@ -25,6 +24,7 @@ const App: React.FC = () => {
   };
 
   const handleSelectAnime = (anime: Anime) => {
+    setIsSearchOpen(false);
     setSelectedAnime(anime);
     navigateTo('details');
   };
@@ -46,19 +46,11 @@ const App: React.FC = () => {
   const handleUpdateAnime = (updatedAnime: Anime) => {
     const newData = animeData.map(anime => anime.id === updatedAnime.id ? updatedAnime : anime);
     setAnimeData(newData);
-    
-    if (featuredAnime && featuredAnime.id === updatedAnime.id) {
-        setFeaturedAnime(updatedAnime);
-    }
   };
 
   const handleDeleteAnime = (animeId: number) => {
     const newData = animeData.filter(anime => anime.id !== animeId);
     setAnimeData(newData);
-    
-    if (featuredAnime && featuredAnime.id === animeId) {
-        setFeaturedAnime(newData.length > 0 ? newData[0] : null);
-    }
   };
 
   // This effect handles page navigation logic that depends on the current state.
@@ -80,11 +72,11 @@ const App: React.FC = () => {
       case 'home':
         return <HomePage 
                   animeData={animeData} 
-                  featuredAnime={featuredAnime}
                   onSelectAnime={handleSelectAnime} 
                   onNavigate={navigateTo} 
                   isAuthenticated={isAuthenticated}
                   onLogout={handleLogout}
+                  onOpenSearch={() => setIsSearchOpen(true)}
                />;
       case 'details':
         // The useEffect handles the redirect if selectedAnime is null.
@@ -104,18 +96,26 @@ const App: React.FC = () => {
       default:
         return <HomePage 
                   animeData={animeData} 
-                  featuredAnime={featuredAnime}
                   onSelectAnime={handleSelectAnime} 
                   onNavigate={navigateTo} 
                   isAuthenticated={isAuthenticated}
                   onLogout={handleLogout}
+                  onOpenSearch={() => setIsSearchOpen(true)}
                 />;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans">
-      {renderPage()}
+      <SearchOverlay 
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        animeData={animeData}
+        onSelectAnime={handleSelectAnime}
+      />
+       <div key={currentPage} className="animate-fadeIn">
+        {renderPage()}
+      </div>
     </div>
   );
 };
