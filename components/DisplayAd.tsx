@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 declare global {
     interface Window {
@@ -8,38 +8,50 @@ declare global {
 
 interface DisplayAdProps {
     adSlot: string;
+    publisherId: string;
     className?: string;
 }
 
-export const DisplayAd: React.FC<DisplayAdProps> = ({ adSlot, className = '' }) => {
+export const DisplayAd: React.FC<DisplayAdProps> = ({ adSlot, publisherId, className = '' }) => {
     const adRef = useRef<HTMLDivElement>(null);
-    const [isAdLoaded, setIsAdLoaded] = useState(false);
+    const hasPushed = useRef(false);
 
     useEffect(() => {
-        try {
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            setIsAdLoaded(true);
-        } catch (e) {
-            console.error("AdSense error: ", e);
-            setIsAdLoaded(false);
+        if (!adRef.current || hasPushed.current) {
+            return;
         }
-    }, []);
 
-    // Show a skeleton loader while the ad is loading to prevent layout shift.
-    // If AdSense fails to load or is blocked, this will eventually collapse.
-    if (!isAdLoaded) {
-      return (
-        <div className={`w-full bg-gray-800 animate-pulse rounded-lg flex items-center justify-center ${className}`} style={{ minHeight: '100px' }}>
-          <span className="text-gray-500 text-sm">Advertisement</span>
-        </div>
-      );
-    }
+        const adContainer = adRef.current;
+        
+        // This function attempts to push the ad.
+        const attemptAdPush = () => {
+            // Check if the container is rendered and has a width, and hasn't been filled.
+            if (adContainer.clientWidth > 0 && !adContainer.querySelector('iframe')) {
+                try {
+                    (window.adsbygoogle = window.adsbygoogle || []).push({});
+                    hasPushed.current = true; // Mark that we've pushed this ad slot
+                } catch (e) {
+                    console.error("AdSense push error: ", e);
+                }
+            }
+        };
+        
+        // Use a short timeout to let the DOM stabilize, especially for ads in modals.
+        const timer = setTimeout(attemptAdPush, 100);
 
+        return () => {
+            clearTimeout(timer);
+        };
+
+    }, [adSlot, publisherId]);
+
+    // The key is crucial. It forces React to re-mount the component when the adSlot changes,
+    // resetting the refs and useEffect for a clean ad request.
     return (
-        <div ref={adRef} className={`w-full overflow-hidden ${className}`}>
+        <div key={adSlot} ref={adRef} className={`w-full overflow-hidden flex justify-center items-center bg-gray-800/50 rounded-lg ${className}`} style={{ minHeight: '90px' }}>
             <ins className="adsbygoogle"
-                 style={{ display: 'block' }}
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" // IMPORTANT: Replace with your publisher ID
+                 style={{ display: 'block', width: '100%' }}
+                 data-ad-client={publisherId}
                  data-ad-slot={adSlot}
                  data-ad-format="auto"
                  data-full-width-responsive="true"></ins>

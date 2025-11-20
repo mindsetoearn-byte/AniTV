@@ -4,7 +4,6 @@ import { AnimeCard } from './AnimeCard';
 import { ChevronRightIcon, PlayIcon } from './icons';
 import { Header, FilterType } from './Header';
 import type { Page } from '../App';
-import { DisplayAd } from './DisplayAd';
 
 interface HomePageProps {
     animeData: Anime[];
@@ -107,16 +106,6 @@ export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, on
                 onFilterChange={handleFilterChange}
             />
             <main className="pt-20">
-                <div className="px-4 md:px-8 mb-8">
-                     {/* 
-                      This is a Google AdSense Display Ad unit.
-                      To make this work:
-                      1. Create a "Display ad" unit in your AdSense account.
-                      2. Get the "ad-slot" ID for that unit.
-                      3. Replace "1234567890" below with your actual ad-slot ID.
-                    */}
-                    <DisplayAd adSlot="1234567890" />
-                </div>
                
                 {featuredItems.length > 0 && (
                     <Hero 

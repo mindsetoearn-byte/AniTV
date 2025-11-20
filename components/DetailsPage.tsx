@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Anime } from '../types';
 import { PlayIcon } from './icons';
-import { InterstitialAd } from './InterstitialAd';
 
 interface DetailsPageProps {
   anime: Anime;
@@ -9,33 +8,13 @@ interface DetailsPageProps {
 }
 
 export const DetailsPage: React.FC<DetailsPageProps> = ({ anime, onBack }) => {
-  const [showAd, setShowAd] = useState(false);
-  const [targetWatchUrl, setTargetWatchUrl] = useState<string | null>(null);
 
   const handleWatchClick = (url: string) => {
-    setTargetWatchUrl(url);
-    setShowAd(true);
-  };
-
-  const handleAdClosed = () => {
-    if (targetWatchUrl) {
-      window.open(targetWatchUrl, '_blank', 'noopener,noreferrer');
-    }
-    setShowAd(false);
-    setTargetWatchUrl(null);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* 
-        This is a Google AdSense Interstitial Ad unit.
-        To make this work:
-        1. Create an "Interstitial ad" unit in your AdSense account.
-        2. Get the "ad-unit-id" for that unit.
-        3. Replace "ca-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY" below with your actual ad-unit-id.
-      */}
-      {showAd && <InterstitialAd adUnitId="ca-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY" onAdClosed={handleAdClosed} />}
-      
       <div className="relative h-96">
         <img src={anime.bannerUrl} alt={anime.title} className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
@@ -43,7 +22,7 @@ export const DetailsPage: React.FC<DetailsPageProps> = ({ anime, onBack }) => {
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight shadow-lg animate-slideInUp">{anime.title}</h1>
         </div>
         <button onClick={onBack} className="absolute top-4 left-4 bg-gray-800/50 hover:bg-gray-700/70 p-2 rounded-full text-white transition-colors z-10">
-          <svg xmlns="http://www.w.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
