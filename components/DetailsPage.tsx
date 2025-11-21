@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Anime } from '../types';
 import { PlayIcon } from './icons';
+import { InterstitialAd } from './InterstitialAd';
 
 interface DetailsPageProps {
   anime: Anime;
@@ -8,13 +9,33 @@ interface DetailsPageProps {
 }
 
 export const DetailsPage: React.FC<DetailsPageProps> = ({ anime, onBack }) => {
+  const [showAd, setShowAd] = useState(false);
+  const [watchUrlToOpen, setWatchUrlToOpen] = useState<string | null>(null);
 
   const handleWatchClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    setWatchUrlToOpen(url);
+    setShowAd(true);
   };
+
+  const handleAdClosed = () => {
+    setShowAd(false);
+    if (watchUrlToOpen) {
+        window.open(watchUrlToOpen, '_blank', 'noopener,noreferrer');
+        setWatchUrlToOpen(null);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {showAd && (
+        <InterstitialAd
+            // IMPORTANT: Replace with your own "Display Ad" unit Slot ID from AdSense
+            adSlot="YOUR_AD_SLOT_ID_HERE"
+            publisherId="ca-pub-6981566320201426"
+            onAdClosed={handleAdClosed}
+        />
+      )}
       <div className="relative h-96">
         <img src={anime.bannerUrl} alt={anime.title} className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
@@ -22,7 +43,7 @@ export const DetailsPage: React.FC<DetailsPageProps> = ({ anime, onBack }) => {
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight shadow-lg animate-slideInUp">{anime.title}</h1>
         </div>
         <button onClick={onBack} className="absolute top-4 left-4 bg-gray-800/50 hover:bg-gray-700/70 p-2 rounded-full text-white transition-colors z-10">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
+          <svg xmlns="http://www.w.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>

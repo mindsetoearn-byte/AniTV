@@ -6,6 +6,7 @@ import { AnimeCard } from './AnimeCard';
 import { ChevronRightIcon, PlayIcon } from './icons';
 import { Header, FilterType } from './Header';
 import type { Page } from '../types';
+import { DisplayAd } from './DisplayAd';
 
 interface HomePageProps {
     animeData: Anime[];
@@ -150,6 +151,16 @@ export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, on
                             {renderAnimeCards(displayedData.slice(0, 6))}
                         </ContentRow>
                         
+                        <div className="px-4 md:px-8 my-8 animate-fadeIn" style={{ animationDelay: '500ms' }}>
+                            <p className="text-xs text-center text-gray-500 mb-2">Advertisement</p>
+                            <DisplayAd
+                                // IMPORTANT: Replace with your own "Display Ad" unit Slot ID from AdSense
+                                adSlot="3629209692" 
+                                publisherId="ca-pub-6981566320201426"
+                                className="min-h-[100px]"
+                            />
+                        </div>
+
                         <ContentRow title="New on AniTV">
                              {renderAnimeCards(displayedData.slice(6, 12))}
                         </ContentRow>
