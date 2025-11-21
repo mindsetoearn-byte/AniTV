@@ -1,3 +1,5 @@
+export type Page = 'home' | 'details' | 'login' | 'admin';
+
 export interface Episode {
   id: number;
   episodeNumber: number;

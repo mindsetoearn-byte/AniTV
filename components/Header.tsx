@@ -1,9 +1,10 @@
 
+
 import React, { useState } from 'react';
 import { Logo, SearchIcon, ChevronDownIcon, AdminIcon, LogoutIcon } from './icons';
-import type { Page } from '../App';
+import type { Page } from '../types';
 
-export type FilterType = 'all' | 'series' | 'movies';
+export type FilterType = 'all' | 'series' | 'movies' | 'watchlist';
 
 interface HeaderProps {
     onNavigate: (page: Page) => void;
@@ -30,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, isAuthenticated, onL
             <div className="flex items-center space-x-8">
                 <Logo className="h-8 w-auto text-white cursor-pointer" onClick={() => onNavigate('home')}/>
                 <nav className="hidden md:flex items-center space-x-4">
+                    <button onClick={() => onFilterChange('watchlist')} className={getButtonClass('watchlist')}>Watchlist</button>
                     <button onClick={() => onFilterChange('series')} className={getButtonClass('series')}>Series</button>
                     <button onClick={() => onFilterChange('movies')} className={getButtonClass('movies')}>Movies</button>
                     <div className="relative">

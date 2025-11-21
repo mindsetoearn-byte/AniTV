@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { Anime } from '../types';
 import { AnimeCard } from './AnimeCard';
@@ -9,9 +10,12 @@ interface SearchOverlayProps {
   onClose: () => void;
   animeData: Anime[];
   onSelectAnime: (anime: Anime) => void;
+  // FIX: Added watchlist and onToggleWatchlist to handle watchlist functionality.
+  watchlist: number[];
+  onToggleWatchlist: (animeId: number) => void;
 }
 
-export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, animeData, onSelectAnime }) => {
+export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, animeData, onSelectAnime, watchlist, onToggleWatchlist }) => {
   const [query, setQuery] = useState('');
   const [filteredData, setFilteredData] = useState<Anime[]>([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -80,7 +84,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, a
               {filteredData.length > 0 ? (
                 filteredData.map((anime, index) => (
                   <div key={anime.id} className="animate-slideInUp" style={{ animationDelay: `${index * 50}ms` }}>
-                    <AnimeCard anime={anime} onSelect={handleSelect} />
+                    {/* FIX: Added missing isOnWatchlist and onToggleWatchlist props to AnimeCard to fix TypeScript error. */}
+                    <AnimeCard 
+                      anime={anime} 
+                      onSelect={handleSelect} 
+                      isOnWatchlist={watchlist.includes(anime.id)} 
+                      onToggleWatchlist={onToggleWatchlist} 
+                    />
                   </div>
                 ))
               ) : (

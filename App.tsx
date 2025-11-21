@@ -1,57 +1,106 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { HomePage } from './components/HomePage';
 import { DetailsPage } from './components/DetailsPage';
 import { LoginPage } from './components/LoginPage';
 import { AdminPage } from './components/AdminPage';
 import { SearchOverlay } from './components/SearchOverlay';
 import { mockAnimeData } from './data/mockData';
-import type { Anime } from './types';
-
-export type Page = 'home' | 'details' | 'login' | 'admin';
+import type { Anime, Page } from './types';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [animeData, setAnimeData] = useState<Anime[]>(mockAnimeData);
+  
+  // Load initial data from localStorage or fall back to mock data
+  const [animeData, setAnimeData] = useState<Anime[]>(() => {
+    try {
+      const savedData = localStorage.getItem('animeTVData');
+      return savedData ? JSON.parse(savedData) : mockAnimeData;
+    } catch (error) {
+      console.error("Could not parse anime data from localStorage", error);
+      return mockAnimeData;
+    }
+  });
+  
+  // Load initial watchlist from localStorage or fall back to an empty array
+  const [watchlist, setWatchlist] = useState<number[]>(() => {
+    try {
+      const savedWatchlist = localStorage.getItem('animeTVWatchlist');
+      return savedWatchlist ? JSON.parse(savedWatchlist) : [];
+    } catch (error) {
+      console.error("Could not parse watchlist from localStorage", error);
+      return [];
+    }
+  });
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  // Save anime data to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('animeTVData', JSON.stringify(animeData));
+    } catch (error) {
+      console.error("Could not save anime data to localStorage", error);
+    }
+  }, [animeData]);
 
-  const navigateTo = (page: Page) => {
+  // Save watchlist to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('animeTVWatchlist', JSON.stringify(watchlist));
+    } catch (error) {
+      console.error("Could not save watchlist to localStorage", error);
+    }
+  }, [watchlist]);
+
+
+  const navigateTo = useCallback((page: Page) => {
     window.scrollTo(0, 0);
     setCurrentPage(page);
-  };
+  }, []);
 
-  const handleSelectAnime = (anime: Anime) => {
+  const handleSelectAnime = useCallback((anime: Anime) => {
     setIsSearchOpen(false);
     setSelectedAnime(anime);
     navigateTo('details');
-  };
+  }, [navigateTo]);
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = useCallback(() => {
     setIsAuthenticated(true);
     navigateTo('admin');
-  };
+  }, [navigateTo]);
   
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setIsAuthenticated(false);
     navigateTo('home');
-  };
+  }, [navigateTo]);
 
   const handleAddAnime = (newAnime: Anime) => {
     setAnimeData(prevData => [newAnime, ...prevData]);
   };
   
   const handleUpdateAnime = (updatedAnime: Anime) => {
-    const newData = animeData.map(anime => anime.id === updatedAnime.id ? updatedAnime : anime);
-    setAnimeData(newData);
+    setAnimeData(prevData => 
+      prevData.map(anime => 
+        anime.id === updatedAnime.id ? updatedAnime : anime
+      )
+    );
   };
 
   const handleDeleteAnime = (animeId: number) => {
-    const newData = animeData.filter(anime => anime.id !== animeId);
-    setAnimeData(newData);
+    setAnimeData(prevData => prevData.filter(anime => anime.id !== animeId));
+    setWatchlist(prev => prev.filter(id => id !== animeId)); // Also remove from watchlist if deleted
   };
+
+  const toggleWatchlist = useCallback((animeId: number) => {
+    setWatchlist(prev => 
+      prev.includes(animeId) 
+        ? prev.filter(id => id !== animeId)
+        : [...prev, animeId]
+    );
+  }, []);
+
 
   // This effect handles page navigation logic that depends on the current state.
   // It prevents calling state setters during the render phase, which causes crashes.
@@ -65,7 +114,7 @@ const App: React.FC = () => {
     if (currentPage === 'details' && !selectedAnime) {
       navigateTo('home');
     }
-  }, [currentPage, isAuthenticated, selectedAnime]);
+  }, [currentPage, isAuthenticated, selectedAnime, navigateTo]);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -77,6 +126,8 @@ const App: React.FC = () => {
                   isAuthenticated={isAuthenticated}
                   onLogout={handleLogout}
                   onOpenSearch={() => setIsSearchOpen(true)}
+                  watchlist={watchlist}
+                  onToggleWatchlist={toggleWatchlist}
                />;
       case 'details':
         // The useEffect handles the redirect if selectedAnime is null.
@@ -92,6 +143,7 @@ const App: React.FC = () => {
             onUpdateAnime={handleUpdateAnime}
             onDeleteAnime={handleDeleteAnime}
             onLogout={handleLogout} 
+            onNavigate={navigateTo}
         /> : null;
       default:
         return <HomePage 
@@ -101,6 +153,8 @@ const App: React.FC = () => {
                   isAuthenticated={isAuthenticated}
                   onLogout={handleLogout}
                   onOpenSearch={() => setIsSearchOpen(true)}
+                  watchlist={watchlist}
+                  onToggleWatchlist={toggleWatchlist}
                 />;
     }
   };
@@ -112,6 +166,8 @@ const App: React.FC = () => {
         onClose={() => setIsSearchOpen(false)}
         animeData={animeData}
         onSelectAnime={handleSelectAnime}
+        watchlist={watchlist}
+        onToggleWatchlist={toggleWatchlist}
       />
        <div key={currentPage} className="animate-fadeIn">
         {renderPage()}

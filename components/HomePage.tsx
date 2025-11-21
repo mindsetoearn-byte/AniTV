@@ -1,9 +1,11 @@
+
+
 import React, { useState, useEffect } from 'react';
 import type { Anime } from '../types';
 import { AnimeCard } from './AnimeCard';
 import { ChevronRightIcon, PlayIcon } from './icons';
 import { Header, FilterType } from './Header';
-import type { Page } from '../App';
+import type { Page } from '../types';
 
 interface HomePageProps {
     animeData: Anime[];
@@ -12,9 +14,11 @@ interface HomePageProps {
     isAuthenticated: boolean;
     onLogout: () => void;
     onOpenSearch: () => void;
+    watchlist: number[];
+    onToggleWatchlist: (animeId: number) => void;
 }
 
-const ContentRow: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+const ContentRow: React.FC<{ title: string; children: React.ReactNode; isEmpty?: boolean; emptyMessage?: string; }> = ({ title, children, isEmpty = false, emptyMessage = "No anime to display." }) => (
     <section className="mb-12">
         <div className="flex items-center justify-between mb-4 px-4 md:px-8">
             <h2 className="text-2xl font-bold text-white animate-slideInRight" style={{ animationDelay: '200ms' }}>{title}</h2>
@@ -22,11 +26,16 @@ const ContentRow: React.FC<{ title: string; children: React.ReactNode }> = ({ ti
                 <ChevronRightIcon className="w-5 h-5" />
             </button>
         </div>
-        <div className="flex space-x-4 overflow-x-auto pb-4 px-4 md:px-8 -mb-4">
-            {children}
-        </div>
+        {isEmpty ? (
+            <div className="px-4 md:px-8 text-gray-400">{emptyMessage}</div>
+        ) : (
+            <div className="flex space-x-4 overflow-x-auto pb-4 px-4 md:px-8 -mb-4">
+                {children}
+            </div>
+        )}
     </section>
 );
+
 
 const Hero: React.FC<{ 
     anime: Anime, 
@@ -63,7 +72,7 @@ const Hero: React.FC<{
     </div>
 );
 
-export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, onNavigate, isAuthenticated, onLogout, onOpenSearch }) => {
+export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, onNavigate, isAuthenticated, onLogout, onOpenSearch, watchlist, onToggleWatchlist }) => {
     const [filter, setFilter] = useState<FilterType>('all');
     const [activeHeroIndex, setActiveHeroIndex] = useState(0);
     const featuredItems = animeData.slice(0, 4);
@@ -90,10 +99,24 @@ export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, on
     };
 
     const displayedData = animeData.filter(anime => {
+        if (filter === 'watchlist') return watchlist.includes(anime.id);
         if (filter === 'series') return anime.type === 'TV' || anime.type === 'ONA';
         if (filter === 'movies') return anime.type === 'Movie';
         return true; // 'all'
     });
+
+    const renderAnimeCards = (data: Anime[]) => {
+      return data.map((anime, index) => (
+          <div key={anime.id} className="animate-slideInUp" style={{ animationDelay: `${index * 100 + 300}ms` }}>
+              <AnimeCard 
+                  anime={anime} 
+                  onSelect={onSelectAnime} 
+                  isOnWatchlist={watchlist.includes(anime.id)}
+                  onToggleWatchlist={onToggleWatchlist}
+              />
+          </div>
+      ));
+    }
 
     return (
         <div className="bg-gray-900 min-h-screen">
@@ -117,21 +140,21 @@ export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, on
                     />
                 )}
                 
-                <ContentRow title="Recently Updated">
-                    {displayedData.slice(0, 6).map((anime, index) => (
-                        <div key={anime.id} className="animate-slideInUp" style={{ animationDelay: `${index * 100 + 300}ms` }}>
-                            <AnimeCard anime={anime} onSelect={onSelectAnime} />
-                        </div>
-                    ))}
-                </ContentRow>
-                
-                <ContentRow title="New on AniTV">
-                     {displayedData.slice(6, 12).map((anime, index) => (
-                        <div key={anime.id} className="animate-slideInUp" style={{ animationDelay: `${index * 100 + 300}ms` }}>
-                            <AnimeCard anime={anime} onSelect={onSelectAnime} />
-                        </div>
-                    ))}
-                </ContentRow>
+                {filter === 'watchlist' ? (
+                     <ContentRow title="My Watchlist" isEmpty={displayedData.length === 0} emptyMessage="Your watchlist is empty. Add shows by clicking the bookmark icon.">
+                        {renderAnimeCards(displayedData)}
+                    </ContentRow>
+                ) : (
+                    <>
+                        <ContentRow title="Recently Updated">
+                            {renderAnimeCards(displayedData.slice(0, 6))}
+                        </ContentRow>
+                        
+                        <ContentRow title="New on AniTV">
+                             {renderAnimeCards(displayedData.slice(6, 12))}
+                        </ContentRow>
+                    </>
+                )}
             </main>
         </div>
     );

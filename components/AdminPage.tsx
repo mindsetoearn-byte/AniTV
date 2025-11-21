@@ -1,7 +1,8 @@
 
+
 import React, { useState, useEffect } from 'react';
-import type { Anime, Episode } from '../types';
-import { LogoutIcon, SpinnerIcon, CheckCircleIcon } from './icons';
+import type { Anime, Episode, Page } from '../types';
+import { LogoutIcon, SpinnerIcon, CheckCircleIcon, HomeIcon } from './icons';
 
 interface AdminPageProps {
     animeData: Anime[];
@@ -9,6 +10,7 @@ interface AdminPageProps {
     onUpdateAnime: (anime: Anime) => void;
     onDeleteAnime: (animeId: number) => void;
     onLogout: () => void;
+    onNavigate: (page: Page) => void;
 }
 
 interface Toast {
@@ -29,7 +31,7 @@ const createNewAnime = (): Anime => ({
     episodes: [],
 });
 
-export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onUpdateAnime, onDeleteAnime, onLogout }) => {
+export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onUpdateAnime, onDeleteAnime, onLogout, onNavigate }) => {
     const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -189,10 +191,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ animeData, onAddAnime, onU
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold">Admin Panel</h1>
-                    <button onClick={onLogout} className="flex items-center space-x-2 text-gray-300 hover:text-red-400 transition-colors bg-gray-700/50 hover:bg-gray-700 px-3 py-2 rounded-md">
-                        <LogoutIcon className="w-5 h-5" />
-                        <span>Logout</span>
-                    </button>
+                    <div className="flex items-center space-x-2">
+                        <button onClick={() => onNavigate('home')} title="View Site" className="flex items-center space-x-2 text-gray-300 hover:text-purple-400 transition-colors bg-gray-700/50 hover:bg-gray-700 px-3 py-2 rounded-md">
+                            <HomeIcon className="w-5 h-5" />
+                        </button>
+                        <button onClick={onLogout} title="Logout" className="flex items-center space-x-2 text-gray-300 hover:text-red-400 transition-colors bg-gray-700/50 hover:bg-gray-700 px-3 py-2 rounded-md">
+                            <LogoutIcon className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-1 bg-gray-900 p-4 rounded-lg">
