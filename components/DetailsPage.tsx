@@ -30,9 +30,6 @@ export const DetailsPage: React.FC<DetailsPageProps> = ({ anime, onBack }) => {
     <div className="min-h-screen bg-gray-900 text-white">
       {showAd && (
         <InterstitialAd
-            // IMPORTANT: Replace with your own "Display Ad" unit Slot ID from AdSense
-            adSlot="YOUR_AD_SLOT_ID_HERE"
-            publisherId="ca-pub-6981566320201426"
             onAdClosed={handleAdClosed}
         />
       )}
@@ -43,7 +40,7 @@ export const DetailsPage: React.FC<DetailsPageProps> = ({ anime, onBack }) => {
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight shadow-lg animate-slideInUp">{anime.title}</h1>
         </div>
         <button onClick={onBack} className="absolute top-4 left-4 bg-gray-800/50 hover:bg-gray-700/70 p-2 rounded-full text-white transition-colors z-10">
-          <svg xmlns="http://www.w.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>

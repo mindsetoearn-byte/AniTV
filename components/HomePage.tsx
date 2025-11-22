@@ -154,10 +154,7 @@ export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, on
                         <div className="px-4 md:px-8 my-8 animate-fadeIn" style={{ animationDelay: '500ms' }}>
                             <p className="text-xs text-center text-gray-500 mb-2">Advertisement</p>
                             <DisplayAd
-                                // IMPORTANT: Replace with your own "Display Ad" unit Slot ID from AdSense
-                                adSlot="3629209692" 
-                                publisherId="ca-pub-6981566320201426"
-                                className="min-h-[100px]"
+                                className="min-h-[90px]"
                             />
                         </div>
 
