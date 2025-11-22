@@ -1,5 +1,5 @@
 // FIX: Removed typo 'a,' from react import to correctly import hooks.
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HomePage } from './components/HomePage';
 import { DetailsPage } from './components/DetailsPage';
 import { LoginPage } from './components/LoginPage';
@@ -8,6 +8,7 @@ import { SearchOverlay } from './components/SearchOverlay';
 import type { Anime, Page } from './types';
 import * as api from './services/api';
 import { SpinnerIcon } from './components/icons';
+import { GlobalAdLoader } from './components/GlobalAdLoader';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -17,6 +18,7 @@ const App: React.FC = () => {
   const [animeData, setAnimeData] = useState<Anime[]>([]);
   const [watchlist, setWatchlist] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dbError, setDbError] = useState<string | null>(null);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -24,6 +26,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoading(true);
+      setDbError(null);
       try {
         const [initialAnimeData, initialWatchlist] = await Promise.all([
           api.getAnimeData(),
@@ -33,6 +36,11 @@ const App: React.FC = () => {
         setWatchlist(initialWatchlist);
       } catch (error) {
         console.error("Failed to fetch initial data", error);
+        if (error instanceof Error) {
+            setDbError(error.message);
+        } else {
+            setDbError("An unknown error occurred while connecting to the database.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -63,28 +71,38 @@ const App: React.FC = () => {
   };
 
   const handleAddAnime = async (newAnime: Anime) => {
-    const updatedData = [newAnime, ...animeData];
-    setAnimeData(updatedData);
-    await api.saveAnimeData(updatedData);
+    try {
+      await api.addAnime(newAnime);
+      // Add to the top of the list for immediate feedback
+      setAnimeData(prevData => [newAnime, ...prevData]);
+    } catch (error) {
+       if (error instanceof Error) setDbError(error.message);
+    }
   };
   
   const handleUpdateAnime = async (updatedAnime: Anime) => {
-    const updatedData = animeData.map(anime => 
-      anime.id === updatedAnime.id ? updatedAnime : anime
-    );
-    setAnimeData(updatedData);
-    await api.saveAnimeData(updatedData);
+    try {
+        await api.updateAnime(updatedAnime);
+        setAnimeData(prevData => prevData.map(anime => 
+          anime.id === updatedAnime.id ? updatedAnime : anime
+        ));
+    } catch (error) {
+       if (error instanceof Error) setDbError(error.message);
+    }
   };
 
   const handleDeleteAnime = async (animeId: number) => {
-    const updatedData = animeData.filter(anime => anime.id !== animeId);
-    setAnimeData(updatedData);
-    await api.saveAnimeData(updatedData);
-    
-    // Also remove from local watchlist if deleted
-    const updatedWatchlist = watchlist.filter(id => id !== animeId);
-    setWatchlist(updatedWatchlist);
-    await api.saveWatchlist(updatedWatchlist);
+    try {
+        await api.deleteAnime(animeId);
+        setAnimeData(prevData => prevData.filter(anime => anime.id !== animeId));
+        
+        // Also remove from local watchlist if deleted
+        const updatedWatchlist = watchlist.filter(id => id !== animeId);
+        setWatchlist(updatedWatchlist);
+        await api.saveWatchlist(updatedWatchlist);
+    } catch(error) {
+        if (error instanceof Error) setDbError(error.message);
+    }
   };
 
   const toggleWatchlist = async (animeId: number) => {
@@ -152,6 +170,13 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans">
+      {/* This component loads the master script for Pop-unders, Social Bars, etc. */}
+      <GlobalAdLoader />
+      {dbError && (
+        <div className="fixed top-0 left-0 right-0 bg-red-600 text-white p-3 text-center z-[1000] text-sm shadow-lg">
+          <strong>Database Connection Error:</strong> {dbError} You are viewing local data; changes will not be saved globally.
+        </div>
+      )}
       <SearchOverlay 
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
@@ -160,7 +185,7 @@ const App: React.FC = () => {
         watchlist={watchlist}
         onToggleWatchlist={toggleWatchlist}
       />
-       <div key={currentPage} className="animate-fadeIn">
+       <div key={currentPage} className={`animate-fadeIn ${dbError ? 'pt-12' : ''}`}>
         {renderPage()}
       </div>
     </div>

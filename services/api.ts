@@ -5,15 +5,12 @@ import { getFirestore } from '../firebase';
 const WATCHLIST_KEY = 'animeTVWatchlist';
 const ANIME_COLLECTION = 'anime';
 
-// --- ANIME DATA API (FIRESTORE) ---
-
 // This function seeds the database with initial data if it's empty.
 const seedDatabase = async () => {
-    const firestore = await getFirestore(); // Get instance inside the function
+    const firestore = await getFirestore();
     console.log("Seeding database with initial mock data...");
     const batch = firestore.batch();
     mockAnimeData.forEach(anime => {
-        // Use anime ID as the document ID for easy lookup
         const docRef = firestore.collection(ANIME_COLLECTION).doc(String(anime.id));
         batch.set(docRef, anime);
     });
@@ -21,50 +18,55 @@ const seedDatabase = async () => {
     return mockAnimeData;
 };
 
+// --- ANIME DATA API (FIRESTORE) ---
+
 export const getAnimeData = async (): Promise<Anime[]> => {
     try {
-        const firestore = await getFirestore(); // Get instance inside the function
+        const firestore = await getFirestore();
         const snapshot = await firestore.collection(ANIME_COLLECTION).get();
         if (snapshot.empty) {
-            // If the database is empty, seed it with mock data.
-            // This is a one-time operation for the first user.
             return await seedDatabase();
         }
         
         const animeData = snapshot.docs.map(doc => doc.data() as Anime);
-        // Sort by ID to maintain a consistent order, assuming higher ID is newer.
         return animeData.sort((a, b) => b.id - a.id);
     } catch (error) {
         console.error("Error fetching anime data from Firestore:", error);
-        // Fallback to mock data if Firestore fails
-        alert("Could not connect to the database. Displaying local data. Please check your Firebase setup and internet connection.");
-        return mockAnimeData;
+        // Fallback to mock data if Firestore fails and throw an error for the UI to catch
+        throw new Error("Could not connect to the database. Displaying local data.");
     }
 };
 
-export const saveAnimeData = async (data: Anime[]): Promise<void> => {
+export const addAnime = async (anime: Anime): Promise<void> => {
     try {
-        const firestore = await getFirestore(); // Get instance inside the function
-        const batch = firestore.batch();
-        const existingDocsSnapshot = await firestore.collection(ANIME_COLLECTION).get();
-        const existingIds = new Set(existingDocsSnapshot.docs.map(doc => doc.id));
-        
-        data.forEach(anime => {
-            const docRef = firestore.collection(ANIME_COLLECTION).doc(String(anime.id));
-            batch.set(docRef, anime);
-            existingIds.delete(String(anime.id));
-        });
-
-        // Delete any anime that are no longer in the new data array
-        existingIds.forEach(idToDelete => {
-             const docRef = firestore.collection(ANIME_COLLECTION).doc(idToDelete);
-             batch.delete(docRef);
-        });
-
-        await batch.commit();
+        const firestore = await getFirestore();
+        const docRef = firestore.collection(ANIME_COLLECTION).doc(String(anime.id));
+        await docRef.set(anime);
     } catch (error) {
-        console.error("Error saving anime data to Firestore:", error);
-        alert("Failed to save data to the database. Please check your Firebase setup and internet connection.");
+        console.error("Error adding anime to Firestore:", error);
+        throw new Error("Failed to save new anime to the database.");
+    }
+};
+
+export const updateAnime = async (anime: Anime): Promise<void> => {
+    try {
+        const firestore = await getFirestore();
+        const docRef = firestore.collection(ANIME_COLLECTION).doc(String(anime.id));
+        await docRef.update(anime);
+    } catch (error) {
+        console.error("Error updating anime in Firestore:", error);
+        throw new Error("Failed to update anime in the database.");
+    }
+};
+
+export const deleteAnime = async (animeId: number): Promise<void> => {
+    try {
+        const firestore = await getFirestore();
+        const docRef = firestore.collection(ANIME_COLLECTION).doc(String(animeId));
+        await docRef.delete();
+    } catch (error) {
+        console.error("Error deleting anime from Firestore:", error);
+        throw new Error("Failed to delete anime from the database.");
     }
 };
 
