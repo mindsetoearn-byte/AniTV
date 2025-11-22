@@ -1,54 +1,89 @@
 import type { Anime } from '../types';
 import { mockAnimeData } from '../data/mockData';
+import { getFirestore } from '../firebase';
 
-const ANIME_DATA_KEY = 'animeTVData';
 const WATCHLIST_KEY = 'animeTVWatchlist';
-const SIMULATED_DELAY = 200; // ms
+const ANIME_COLLECTION = 'anime';
 
-// Helper to simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// --- ANIME DATA API (FIRESTORE) ---
 
-// --- ANIME DATA API ---
+// This function seeds the database with initial data if it's empty.
+const seedDatabase = async () => {
+    const firestore = await getFirestore(); // Get instance inside the function
+    console.log("Seeding database with initial mock data...");
+    const batch = firestore.batch();
+    mockAnimeData.forEach(anime => {
+        // Use anime ID as the document ID for easy lookup
+        const docRef = firestore.collection(ANIME_COLLECTION).doc(String(anime.id));
+        batch.set(docRef, anime);
+    });
+    await batch.commit();
+    return mockAnimeData;
+};
 
 export const getAnimeData = async (): Promise<Anime[]> => {
-    await delay(SIMULATED_DELAY);
     try {
-        const savedData = localStorage.getItem(ANIME_DATA_KEY);
-        // If there's saved data, parse and return it. Otherwise, return the initial mock data.
-        return savedData ? JSON.parse(savedData) : mockAnimeData;
+        const firestore = await getFirestore(); // Get instance inside the function
+        const snapshot = await firestore.collection(ANIME_COLLECTION).get();
+        if (snapshot.empty) {
+            // If the database is empty, seed it with mock data.
+            // This is a one-time operation for the first user.
+            return await seedDatabase();
+        }
+        
+        const animeData = snapshot.docs.map(doc => doc.data() as Anime);
+        // Sort by ID to maintain a consistent order, assuming higher ID is newer.
+        return animeData.sort((a, b) => b.id - a.id);
     } catch (error) {
-        console.error("Could not parse anime data from localStorage", error);
-        // Fallback to mock data in case of parsing error
+        console.error("Error fetching anime data from Firestore:", error);
+        // Fallback to mock data if Firestore fails
+        alert("Could not connect to the database. Displaying local data. Please check your Firebase setup and internet connection.");
         return mockAnimeData;
     }
 };
 
 export const saveAnimeData = async (data: Anime[]): Promise<void> => {
-    await delay(SIMULATED_DELAY);
     try {
-        localStorage.setItem(ANIME_DATA_KEY, JSON.stringify(data));
+        const firestore = await getFirestore(); // Get instance inside the function
+        const batch = firestore.batch();
+        const existingDocsSnapshot = await firestore.collection(ANIME_COLLECTION).get();
+        const existingIds = new Set(existingDocsSnapshot.docs.map(doc => doc.id));
+        
+        data.forEach(anime => {
+            const docRef = firestore.collection(ANIME_COLLECTION).doc(String(anime.id));
+            batch.set(docRef, anime);
+            existingIds.delete(String(anime.id));
+        });
+
+        // Delete any anime that are no longer in the new data array
+        existingIds.forEach(idToDelete => {
+             const docRef = firestore.collection(ANIME_COLLECTION).doc(idToDelete);
+             batch.delete(docRef);
+        });
+
+        await batch.commit();
     } catch (error) {
-        console.error("Could not save anime data to localStorage", error);
+        console.error("Error saving anime data to Firestore:", error);
+        alert("Failed to save data to the database. Please check your Firebase setup and internet connection.");
     }
 };
 
-// --- WATCHLIST API ---
+
+// --- WATCHLIST API (LOCALSTORAGE - User Specific) ---
 
 export const getWatchlist = async (): Promise<number[]> => {
-    await delay(SIMULATED_DELAY);
+    await new Promise(resolve => setTimeout(resolve, 100)); // simulate small delay
     try {
         const savedWatchlist = localStorage.getItem(WATCHLIST_KEY);
-        // If there's a saved watchlist, parse and return it. Otherwise, return an empty array.
         return savedWatchlist ? JSON.parse(savedWatchlist) : [];
     } catch (error) {
         console.error("Could not parse watchlist from localStorage", error);
-        // Fallback to an empty array in case of error
         return [];
     }
 };
 
 export const saveWatchlist = async (watchlist: number[]): Promise<void> => {
-    await delay(SIMULATED_DELAY);
+    await new Promise(resolve => setTimeout(resolve, 100)); // simulate small delay
     try {
         localStorage.setItem(WATCHLIST_KEY, JSON.stringify(watchlist));
     } catch (error) {

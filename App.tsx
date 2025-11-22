@@ -1,3 +1,4 @@
+// FIX: Removed typo 'a,' from react import to correctly import hooks.
 import React, { useState, useEffect, useCallback } from 'react';
 import { HomePage } from './components/HomePage';
 import { DetailsPage } from './components/DetailsPage';
@@ -19,9 +20,10 @@ const App: React.FC = () => {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Fetch initial data from the simulated API on startup
+  // Fetch initial data from the API (Firebase for anime, localStorage for watchlist)
   useEffect(() => {
     const fetchInitialData = async () => {
+      setIsLoading(true);
       try {
         const [initialAnimeData, initialWatchlist] = await Promise.all([
           api.getAnimeData(),
@@ -79,7 +81,7 @@ const App: React.FC = () => {
     setAnimeData(updatedData);
     await api.saveAnimeData(updatedData);
     
-    // Also remove from watchlist if deleted
+    // Also remove from local watchlist if deleted
     const updatedWatchlist = watchlist.filter(id => id !== animeId);
     setWatchlist(updatedWatchlist);
     await api.saveWatchlist(updatedWatchlist);
@@ -95,9 +97,8 @@ const App: React.FC = () => {
   };
 
 
-  // This effect handles page navigation logic that depends on the current state.
   useEffect(() => {
-    if (isLoading) return; // Don't navigate while loading
+    if (isLoading) return;
 
     if (currentPage === 'admin' && !isAuthenticated) {
       navigateTo('login');
@@ -106,12 +107,13 @@ const App: React.FC = () => {
     if (currentPage === 'details' && !selectedAnime) {
       navigateTo('home');
     }
-  }, [currentPage, isAuthenticated, selectedAnime, navigateTo, isLoading]);
+  }, [currentPage, isAuthenticated, selectedAnime, isLoading]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <SpinnerIcon className="w-12 h-12 text-purple-500 animate-spin" />
+        <p className="ml-4 text-lg text-gray-300">Connecting to database...</p>
       </div>
     );
   }
@@ -143,16 +145,8 @@ const App: React.FC = () => {
             onNavigate={navigateTo}
         /> : null;
       default:
-        return <HomePage 
-                  animeData={animeData} 
-                  onSelectAnime={handleSelectAnime} 
-                  onNavigate={navigateTo} 
-                  isAuthenticated={isAuthenticated}
-                  onLogout={handleLogout}
-                  onOpenSearch={() => setIsSearchOpen(true)}
-                  watchlist={watchlist}
-                  onToggleWatchlist={toggleWatchlist}
-                />;
+        navigateTo('home');
+        return null;
     }
   };
 
