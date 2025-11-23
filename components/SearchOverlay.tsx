@@ -1,9 +1,9 @@
 
-
 import React, { useState, useEffect } from 'react';
 import type { Anime } from '../types';
 import { AnimeCard } from './AnimeCard';
 import { SearchIcon } from './icons';
+import { DisplayAd } from './DisplayAd';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -61,7 +61,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, a
       onClick={onClose}
     >
       <div className="w-full max-w-4xl mx-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="relative mb-8">
+        <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
           <input
             type="text"
@@ -72,13 +72,17 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, a
             className="w-full bg-gray-800 border-2 border-gray-700 text-white text-lg pl-14 pr-14 py-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all"
           />
            <button onClick={onClose} className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-700 hover:bg-gray-600 p-2 rounded-full text-white transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
            </button>
         </div>
+
+        <div className="mb-4">
+          <DisplayAd className="min-h-[90px]" />
+        </div>
         
-        <div className="overflow-y-auto max-h-[calc(100vh-150px)] pr-2">
+        <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
           {query.trim() !== '' && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredData.length > 0 ? (

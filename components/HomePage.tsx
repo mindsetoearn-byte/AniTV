@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import type { Anime } from '../types';
 import { AnimeCard } from './AnimeCard';
@@ -161,6 +160,12 @@ export const HomePage: React.FC<HomePageProps> = ({ animeData, onSelectAnime, on
                         <ContentRow title="New on AniTV">
                              {renderAnimeCards(displayedData.slice(6, 12))}
                         </ContentRow>
+
+                        <div className="px-4 md:px-8 my-8 animate-fadeIn" style={{ animationDelay: '600ms' }}>
+                           <DisplayAd
+                                className="min-h-[90px]"
+                            />
+                        </div>
                     </>
                 )}
             </main>

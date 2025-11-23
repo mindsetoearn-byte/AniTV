@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Anime } from '../types';
 import { PlayIcon } from './icons';
 import { InterstitialAd } from './InterstitialAd';
+import { DisplayAd } from './DisplayAd';
 
 interface DetailsPageProps {
   anime: Anime;
@@ -53,6 +54,10 @@ export const DetailsPage: React.FC<DetailsPageProps> = ({ anime, onBack }) => {
             <p className="text-gray-300 leading-relaxed">{anime.synopsis}</p>
           </div>
           
+          <div className="my-8 animate-fadeIn" style={{ animationDelay: '300ms' }}>
+            <DisplayAd className="min-h-[90px]" />
+          </div>
+
           <div className="animate-fadeIn" style={{ animationDelay: '400ms' }}>
             <h2 className="text-2xl font-bold text-purple-400 mb-4">Episodes</h2>
             <div className="space-y-3">
